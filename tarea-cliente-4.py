@@ -1,77 +1,87 @@
-# archivo: cliente.py
-# Estudiante: Verónica Ordoñez
-# Tarea: Clase Cliente con validaciones
-
+from abc import ABC, abstractmethod
+import logging
 import re
-from excepciones import DatoInvalidoError  # lo creará el Estudiante 4
-from logger import logger  # lo creará el Estudiante 4
 
-class Cliente:
-    """Clase Cliente con encapsulación y validación de datos"""
-    
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(levelname)s: %(message)s"
+)
+logger = logging.getLogger(__name__)
+
+
+class DatoInvalidoError(Exception):
+    """Excepcion para datos invalidos del sistema."""
+
+
+class EntidadSistema(ABC):
+    """Clase abstracta general del sistema."""
+
+    @abstractmethod
+    def mostrar_info(self):
+        pass
+
+
+class Cliente(EntidadSistema):
+    """Clase Cliente con encapsulacion y validacion de datos."""
+
     def __init__(self, nombre, email, telefono):
         self._nombre = None
         self._email = None
         self._telefono = None
-        
+
         self.nombre = nombre
         self.email = email
         self.telefono = telefono
-        
+
         logger.info(f"Cliente creado: {self._nombre}")
-    
+
     @property
     def nombre(self):
         return self._nombre
-    
+
     @nombre.setter
     def nombre(self, valor):
-        # Validación: no vacío y mínimo 3 caracteres
-        if not valor or len(valor.strip()) < 3:
-            raise DatoInvalidoError(f"Nombre inválido: mínimo 3 caracteres")
+        if not isinstance(valor, str) or len(valor.strip()) < 3:
+            raise DatoInvalidoError("Nombre invalido: minimo 3 caracteres")
         self._nombre = valor.strip()
-    
+
     @property
     def email(self):
         return self._email
-    
+
     @email.setter
     def email(self, valor):
-        # Validación: formato de email
-        patron = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-        if not re.match(patron, valor):
-            raise DatoInvalidoError(f"Email inválido: {valor}")
-        self._email = valor
-    
+        patron = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+        if not isinstance(valor, str) or not re.match(patron, valor):
+            raise DatoInvalidoError(f"Email invalido: {valor}")
+        self._email = valor.strip()
+
     @property
     def telefono(self):
         return self._telefono
-    
+
     @telefono.setter
     def telefono(self, valor):
-        # Validación: solo dígitos y mínimo 7
+        if not isinstance(valor, str):
+            valor = str(valor)
+
         if not valor.isdigit() or len(valor) < 7:
-            raise DatoInvalidoError(f"Teléfono inválido: solo dígitos, mínimo 7")
+            raise DatoInvalidoError(
+                "Telefono invalido: solo digitos, minimo 7"
+            )
         self._telefono = valor
-    
+
     def mostrar_info(self):
-        """Retorna información del cliente"""
-        return f"Cliente: {self._nombre} | Email: {self._email} | Tel: {self._telefono}"
+        return (
+            f"Cliente: {self._nombre} | "
+            f"Email: {self._email} | "
+            f"Tel: {self._telefono}"
+        )
 
 
-# archivo: .python
-# Estudiante: Yuler Alexander Velasquqez 
-# Tarea:  Clase abstracta Servicio + herencia (ReservaSalas, AlquilerEquipos, Asesoria)
-from abc import ABC, abstractmethod
-from excepciones import DatoInvalidoError
-from logger import logger
-
-# ==============================
-# CLASE ABSTRACTA SERVICIO
-# ==============================
-
-class Servicio(ABC):
-    """Clase abstracta base para los servicios"""
+class Servicio(EntidadSistema, ABC):
+    """Clase abstracta base para los servicios."""
 
     def __init__(self, codigo, descripcion, precio):
         self._codigo = None
@@ -90,8 +100,8 @@ class Servicio(ABC):
 
     @codigo.setter
     def codigo(self, valor):
-        if not valor or len(valor.strip()) == 0:
-            raise DatoInvalidoError("Código inválido")
+        if not isinstance(valor, str) or len(valor.strip()) == 0:
+            raise DatoInvalidoError("Codigo invalido")
         self._codigo = valor.strip()
 
     @property
@@ -100,8 +110,8 @@ class Servicio(ABC):
 
     @descripcion.setter
     def descripcion(self, valor):
-        if not valor or len(valor.strip()) < 5:
-            raise DatoInvalidoError("Descripción inválida")
+        if not isinstance(valor, str) or len(valor.strip()) < 5:
+            raise DatoInvalidoError("Descripcion invalida")
         self._descripcion = valor.strip()
 
     @property
@@ -110,27 +120,28 @@ class Servicio(ABC):
 
     @precio.setter
     def precio(self, valor):
-        if valor <= 0:
-            raise DatoInvalidoError("Precio inválido")
+        if not isinstance(valor, (int, float)) or valor <= 0:
+            raise DatoInvalidoError("Precio invalido")
         self._precio = valor
 
     @abstractmethod
-    def calcular_costo(self):
+    def calcular_costo(self, impuesto=0, descuento=0):
         pass
 
     def mostrar_info(self):
-        return f"{self._codigo} | {self._descripcion} | Precio base: {self._precio}"
+        return (
+            f"{self._codigo} | {self._descripcion} | "
+            f"Precio base: {self._precio}"
+        )
 
-
-# ==============================
-# HERENCIA 1: RESERVA DE SALAS
-# ==============================
 
 class ReservaSalas(Servicio):
+    """Servicio para reservar salas por horas."""
 
     def __init__(self, codigo, descripcion, precio, horas):
         super().__init__(codigo, descripcion, precio)
-        self._horas = horas
+        self._horas = None
+        self.horas = horas
 
     @property
     def horas(self):
@@ -138,25 +149,26 @@ class ReservaSalas(Servicio):
 
     @horas.setter
     def horas(self, valor):
-        if valor <= 0:
-            raise DatoInvalidoError("Horas inválidas")
+        if not isinstance(valor, (int, float)) or valor <= 0:
+            raise DatoInvalidoError("Horas invalidas")
         self._horas = valor
 
-    def calcular_costo(self):
+    def calcular_costo(self, impuesto=0, descuento=0):
         total = self._precio * self._horas
+        total += total * impuesto
+        total -= total * descuento
+
         logger.info(f"Costo ReservaSalas: {total}")
         return total
 
 
-# ==============================
-# HERENCIA 2: ALQUILER EQUIPOS
-# ==============================
-
 class AlquilerEquipos(Servicio):
+    """Servicio para alquilar equipos por dias."""
 
     def __init__(self, codigo, descripcion, precio, dias):
         super().__init__(codigo, descripcion, precio)
-        self._dias = dias
+        self._dias = None
+        self.dias = dias
 
     @property
     def dias(self):
@@ -164,25 +176,26 @@ class AlquilerEquipos(Servicio):
 
     @dias.setter
     def dias(self, valor):
-        if valor <= 0:
-            raise DatoInvalidoError("Días inválidos")
+        if not isinstance(valor, (int, float)) or valor <= 0:
+            raise DatoInvalidoError("Dias invalidos")
         self._dias = valor
 
-    def calcular_costo(self):
+    def calcular_costo(self, impuesto=0, descuento=0):
         total = self._precio * self._dias
+        total += total * impuesto
+        total -= total * descuento
+
         logger.info(f"Costo AlquilerEquipos: {total}")
         return total
 
 
-# ==============================
-# HERENCIA 3: ASESORIA
-# ==============================
-
 class Asesoria(Servicio):
+    """Servicio de asesoria por sesiones."""
 
     def __init__(self, codigo, descripcion, precio, sesiones):
         super().__init__(codigo, descripcion, precio)
-        self._sesiones = sesiones
+        self._sesiones = None
+        self.sesiones = sesiones
 
     @property
     def sesiones(self):
@@ -190,12 +203,115 @@ class Asesoria(Servicio):
 
     @sesiones.setter
     def sesiones(self, valor):
-        if valor <= 0:
-            raise DatoInvalidoError("Sesiones inválidas")
+        if not isinstance(valor, (int, float)) or valor <= 0:
+            raise DatoInvalidoError("Sesiones invalidas")
         self._sesiones = valor
 
-    def calcular_costo(self):
+    def calcular_costo(self, impuesto=0, descuento=0):
         total = self._precio * self._sesiones
+        total += total * impuesto
+        total -= total * descuento
+
         logger.info(f"Costo Asesoria: {total}")
         return total
-    
+
+
+class Reserva:
+    """Clase Reserva."""
+
+    def __init__(self, cliente, servicio, duracion):
+        self._cliente = cliente
+        self._servicio = servicio
+        self._duracion = duracion
+        self._estado = "Pendiente"
+
+        logger.info("Reserva creada")
+
+    @property
+    def cliente(self):
+        return self._cliente
+
+    @property
+    def servicio(self):
+        return self._servicio
+
+    @property
+    def duracion(self):
+        return self._duracion
+
+    @property
+    def estado(self):
+        return self._estado
+
+    def confirmar(self):
+        if self._estado == "Cancelada":
+            raise DatoInvalidoError(
+                "No se puede confirmar una reserva cancelada"
+            )
+
+        self._estado = "Confirmada"
+        logger.info("Reserva confirmada")
+
+    def cancelar(self):
+        self._estado = "Cancelada"
+        logger.info("Reserva cancelada")
+
+    def procesar_reserva(self):
+        try:
+            total = self._servicio.calcular_costo()
+            logger.info(f"Reserva procesada correctamente. Total: {total}")
+            return total
+        except Exception as error:
+            logger.error(f"Error procesando reserva: {error}")
+            raise
+
+    def mostrar_info(self):
+        return (
+            "\n===== RESERVA =====\n"
+            f"{self._cliente.mostrar_info()}\n"
+            f"Servicio: {self._servicio.descripcion}\n"
+            f"Duracion: {self._duracion}\n"
+            f"Estado: {self._estado}"
+        )
+
+
+def main():
+    try:
+        cliente1 = Cliente(
+            "Camilo Velasco",
+            "camilo@gmail.com",
+            "3001234567"
+        )
+
+        servicio1 = ReservaSalas(
+            "RS01",
+            "Sala empresarial",
+            50000,
+            3
+        )
+
+        reserva1 = Reserva(
+            cliente1,
+            servicio1,
+            "3 horas"
+        )
+
+        print(cliente1.mostrar_info())
+        print(servicio1.mostrar_info())
+        print(reserva1.mostrar_info())
+
+        reserva1.confirmar()
+        print("\nEstado actual:", reserva1.estado)
+
+        total = reserva1.procesar_reserva()
+        print(f"\nCosto final: ${total:,.0f}")
+
+    except DatoInvalidoError as error:
+        print(f"ERROR DE VALIDACION: {error}")
+
+    except Exception as error:
+        print(f"ERROR GENERAL: {error}")
+
+
+if __name__ == "__main__":
+    main()
