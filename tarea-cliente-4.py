@@ -215,7 +215,7 @@ class Asesoria(Servicio):
         logger.info(f"Costo Asesoria: {total}")
         return total
 
-
+#Sofia Muñoz
 class Reserva:
     """Clase Reserva."""
 
@@ -242,7 +242,7 @@ class Reserva:
     @property
     def estado(self):
         return self._estado
-
+# Sofia Muñoz
     def confirmar(self):
         if self._estado == "Cancelada":
             raise DatoInvalidoError(
@@ -251,11 +251,11 @@ class Reserva:
 
         self._estado = "Confirmada"
         logger.info("Reserva confirmada")
-
+# Sofia Muñoz
     def cancelar(self):
         self._estado = "Cancelada"
         logger.info("Reserva cancelada")
-
+# Sofia Muñoz
     def procesar_reserva(self):
         try:
             total = self._servicio.calcular_costo()
