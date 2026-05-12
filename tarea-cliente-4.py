@@ -1,29 +1,37 @@
+
+
+# SOFIA MUÑOZ - MANEJO DE EXCEPCIONES + LOGS
+
 from abc import ABC, abstractmethod
 import logging
 import re
 
-
+# Configuración de logging - SOFIA MUÑOZ
 logging.basicConfig(
     level=logging.INFO,
     format="%(levelname)s: %(message)s"
 )
 logger = logging.getLogger(__name__)
 
-
+# Excepción personalizada - SOFIA MUÑOZ
 class DatoInvalidoError(Exception):
     """Excepcion para datos invalidos del sistema."""
+    pass
 
+# YULER VELASQUEZ - CLASE ABSTRACTA GENERAL
 
 class EntidadSistema(ABC):
-    """Clase abstracta general del sistema."""
+    """Clase abstracta general del sistema - YULER VELASQUEZ"""
 
     @abstractmethod
     def mostrar_info(self):
         pass
 
 
+# VERONICA ORDOÑEZ - CLASE CLIENTE + VALIDACIONES
+
 class Cliente(EntidadSistema):
-    """Clase Cliente con encapsulacion y validacion de datos."""
+    """Clase Cliente con encapsulacion y validacion de datos - VERONICA ORDOÑEZ"""
 
     def __init__(self, nombre, email, telefono):
         self._nombre = None
@@ -34,8 +42,10 @@ class Cliente(EntidadSistema):
         self.email = email
         self.telefono = telefono
 
+        # Log - SOFIA MUÑOZ
         logger.info(f"Cliente creado: {self._nombre}")
 
+    # VALIDACIONES DE NOMBRE - VERONICA ORDOÑEZ
     @property
     def nombre(self):
         return self._nombre
@@ -46,6 +56,7 @@ class Cliente(EntidadSistema):
             raise DatoInvalidoError("Nombre invalido: minimo 3 caracteres")
         self._nombre = valor.strip()
 
+    # VALIDACIONES DE EMAIL - VERONICA ORDOÑEZ
     @property
     def email(self):
         return self._email
@@ -57,6 +68,7 @@ class Cliente(EntidadSistema):
             raise DatoInvalidoError(f"Email invalido: {valor}")
         self._email = valor.strip()
 
+    # VALIDACIONES DE TELEFONO - VERONICA ORDOÑEZ
     @property
     def telefono(self):
         return self._telefono
@@ -80,8 +92,10 @@ class Cliente(EntidadSistema):
         )
 
 
+# YULER VELASQUEZ - CLASE ABSTRACTA SERVICIO + HERENCIA
+
 class Servicio(EntidadSistema, ABC):
-    """Clase abstracta base para los servicios."""
+    """Clase abstracta base para los servicios - YULER VELASQUEZ"""
 
     def __init__(self, codigo, descripcion, precio):
         self._codigo = None
@@ -92,8 +106,10 @@ class Servicio(EntidadSistema, ABC):
         self.descripcion = descripcion
         self.precio = precio
 
+        # Log - SOFIA MUÑOZ
         logger.info(f"Servicio creado: {self._codigo}")
 
+    # VALIDACIONES SERVICIO - YULER VELASQUEZ
     @property
     def codigo(self):
         return self._codigo
@@ -134,9 +150,9 @@ class Servicio(EntidadSistema, ABC):
             f"Precio base: {self._precio}"
         )
 
-
+# CLASE HIJA 1 - RESERVA SALAS (HERENCIA) - YULER VELASQUEZ
 class ReservaSalas(Servicio):
-    """Servicio para reservar salas por horas."""
+    """Servicio para reservar salas por horas - YULER VELASQUEZ"""
 
     def __init__(self, codigo, descripcion, precio, horas):
         super().__init__(codigo, descripcion, precio)
@@ -158,12 +174,13 @@ class ReservaSalas(Servicio):
         total += total * impuesto
         total -= total * descuento
 
+        # Log - SOFIA MUÑOZ
         logger.info(f"Costo ReservaSalas: {total}")
         return total
 
-
+# CLASE HIJA 2 - ALQUILER EQUIPOS (HERENCIA) - YULER VELASQUEZ
 class AlquilerEquipos(Servicio):
-    """Servicio para alquilar equipos por dias."""
+    """Servicio para alquilar equipos por dias - YULER VELASQUEZ"""
 
     def __init__(self, codigo, descripcion, precio, dias):
         super().__init__(codigo, descripcion, precio)
@@ -185,12 +202,13 @@ class AlquilerEquipos(Servicio):
         total += total * impuesto
         total -= total * descuento
 
+        # Log - SOFIA MUÑOZ
         logger.info(f"Costo AlquilerEquipos: {total}")
         return total
 
-
+# CLASE HIJA 3 - ASESORIA (HERENCIA) - YULER VELASQUEZ
 class Asesoria(Servicio):
-    """Servicio de asesoria por sesiones."""
+    """Servicio de asesoria por sesiones - YULER VELASQUEZ"""
 
     def __init__(self, codigo, descripcion, precio, sesiones):
         super().__init__(codigo, descripcion, precio)
@@ -212,12 +230,15 @@ class Asesoria(Servicio):
         total += total * impuesto
         total -= total * descuento
 
+        # Log - SOFIA MUÑOZ
         logger.info(f"Costo Asesoria: {total}")
         return total
 
 
-class Reserva:
-    """Clase Reserva."""
+# EDWAR CAMILO NARVAEZ VELASCO - CLASE RESERVA + MÉTODOS
+
+class Reserva(EntidadSistema):
+    """Clase Reserva con métodos principales - EDWAR CAMILO NARVAEZ VELASCO"""
 
     def __init__(self, cliente, servicio, duracion):
         self._cliente = cliente
@@ -225,6 +246,7 @@ class Reserva:
         self._duracion = duracion
         self._estado = "Pendiente"
 
+        # Log - SOFIA MUÑOZ
         logger.info("Reserva creada")
 
     @property
@@ -243,6 +265,7 @@ class Reserva:
     def estado(self):
         return self._estado
 
+    # MÉTODO CONFIRMAR - EDWAR CAMILO NARVAEZ VELASCO
     def confirmar(self):
         if self._estado == "Cancelada":
             raise DatoInvalidoError(
@@ -250,18 +273,24 @@ class Reserva:
             )
 
         self._estado = "Confirmada"
+        # Log - SOFIA MUÑOZ
         logger.info("Reserva confirmada")
 
+    # MÉTODO CANCELAR - EDWAR CAMILO NARVAEZ VELASCO
     def cancelar(self):
         self._estado = "Cancelada"
+        # Log - SOFIA MUÑOZ
         logger.info("Reserva cancelada")
 
+    # MÉTODO PROCESAR - EDWAR CAMILO NARVAEZ VELASCO
     def procesar_reserva(self):
         try:
             total = self._servicio.calcular_costo()
+            # Log - SOFIA MUÑOZ
             logger.info(f"Reserva procesada correctamente. Total: {total}")
             return total
         except Exception as error:
+            # Manejo de excepciones - SOFIA MUÑOZ
             logger.error(f"Error procesando reserva: {error}")
             raise
 
@@ -275,42 +304,56 @@ class Reserva:
         )
 
 
+# TODOS  - MAIN.PY + SIMULACIÓN 10 OPERACIONES
+
 def main():
+    """Función principal con simulación de 10 operaciones - TRABAJO EN EQUIPO"""
+    print("=== SIMULACIÓN SISTEMA DE RESERVAS - 10 OPERACIONES ===\n")
+    
     try:
-        cliente1 = Cliente(
-            "Camilo Velasco",
-            "camilo@gmail.com",
-            "3001234567"
-        )
+        # OPERACIÓN 1-3: Creación clientes - VERONICA ORDOÑEZ
+        clientes = []
+        clientes.append(Cliente("Camilo Velasco", "camilo@gmail.com", "3001234567"))
+        clientes.append(Cliente("Maria Lopez", "maria@empresa.com", "3109876543"))
+        clientes.append(Cliente("Juan Perez", "juan@gmail.com", "3204567890"))
 
-        servicio1 = ReservaSalas(
-            "RS01",
-            "Sala empresarial",
-            50000,
-            3
-        )
+        # OPERACIÓN 4-7: Creación servicios - YULER VELASQUEZ
+        servicios = []
+        servicios.append(ReservaSalas("RS01", "Sala empresarial", 50000, 3))
+        servicios.append(AlquilerEquipos("AE01", "Proyector", 25000, 2))
+        servicios.append(Asesoria("AS01", "Consultoria empresarial", 80000, 1))
+        servicios.append(ReservaSalas("RS02", "Sala reuniones", 30000, 4))
 
-        reserva1 = Reserva(
-            cliente1,
-            servicio1,
-            "3 horas"
-        )
+        # OPERACIÓN 8-10: Reservas + métodos - EDWAR CAMILO + Integración todos
+        reservas = []
+        reservas.append(Reserva(clientes[0], servicios[0], "3 horas"))
+        reservas.append(Reserva(clientes[1], servicios[1], "2 dias"))
+        reservas.append(Reserva(clientes[2], servicios[2], "1 sesion"))
 
-        print(cliente1.mostrar_info())
-        print(servicio1.mostrar_info())
-        print(reserva1.mostrar_info())
+        # Procesar todas las reservas
+        total_general = 0
+        for i, reserva in enumerate(reservas, 1):
+            print(f"\n--- OPERACIÓN {i+7} ---")
+            print(reserva.mostrar_info())
+            
+            reserva.confirmar()
+            print(f"Estado: {reserva.estado}")
+            
+            total = reserva.procesar_reserva()
+            total_general += total
+            print(f"Costo: ${total:,.0f}")
+        
+        print(f"\n{'='*50}")
+        print(f"TOTAL GENERAL 10 OPERACIONES: ${total_general:,.0f}")
+        print(f"{'='*50}")
 
-        reserva1.confirmar()
-        print("\nEstado actual:", reserva1.estado)
-
-        total = reserva1.procesar_reserva()
-        print(f"\nCosto final: ${total:,.0f}")
-
+    # MANEJO EXCEPCIONES - SOFIA MUÑOZ
     except DatoInvalidoError as error:
-        print(f"ERROR DE VALIDACION: {error}")
-
+        print(f"❌ ERROR DE VALIDACION: {error}")
+        logger.error(f"Validación fallida: {error}")
     except Exception as error:
-        print(f"ERROR GENERAL: {error}")
+        print(f"❌ ERROR GENERAL: {error}")
+        logger.error(f"Error general: {error}")
 
 
 if __name__ == "__main__":
